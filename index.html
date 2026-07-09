@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearCut Calories — Clear-cut answers for your health goals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Libre+Franklin:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F7F7;
+    --card:#FFFFFF;
+    --ink:#132427;
+    --ink-soft:#485B5E;
+    --line:#DAE4E4;
+    --green:#0F6E6E;
+    --green-soft:#E1F0F0;
+    --gold:#B8860B;
+    --gold-soft:#F7EFDB;
+    --red:#A33A2E;
+    --red-soft:#F6E6E3;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:16px}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:'Libre Franklin',system-ui,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:32px 20px 64px}
+
+  header{margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .brand{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.9rem;letter-spacing:-.02em}
+  .brand .tick{color:var(--green)}
+  .brand .sub{font-size:1rem;font-weight:700;color:var(--ink-soft);margin-left:6px}
+  .tagline{color:var(--ink-soft);font-size:.95rem;margin-top:2px}
+
+  .units{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0}
+  .units button{
+    appearance:none;border:none;background:#fff;cursor:pointer;padding:8px 16px;
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:.85rem;color:var(--ink-soft);
+  }
+  .units button[aria-pressed="true"]{background:var(--green);color:#fff}
+  .units button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+
+  .tabs{
+    display:flex;gap:4px;margin:20px 0;border-bottom:2px solid var(--line);
+    overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    appearance:none;border:none;background:none;cursor:pointer;
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:.95rem;
+    color:var(--ink-soft);padding:10px 12px 12px;position:relative;white-space:nowrap;flex-shrink:0;
+  }
+  .tab[aria-selected="true"]{color:var(--ink)}
+  .tab[aria-selected="true"]::after{
+    content:"";position:absolute;left:0;right:0;bottom:-2px;height:3px;background:var(--green);border-radius:2px 2px 0 0;
+  }
+  .tab:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:6px}
+
+  .panel{display:none}
+  .panel.active{display:block}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .card h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:14px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  @media(max-width:420px){.two-col{grid-template-columns:1fr}}
+  .field{margin-bottom:14px}
+  .field label{
+    display:block;font-size:.8rem;font-weight:600;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;
+  }
+  .field .hint{font-size:.78rem;color:var(--ink-soft);font-weight:400;text-transform:none;letter-spacing:0}
+  .input-row{position:relative}
+  .input-row .suffix{
+    position:absolute;top:50%;right:12px;transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:.9rem;color:var(--ink-soft);pointer-events:none;
+  }
+  input[type=number],select{
+    width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;
+    font-family:'IBM Plex Mono',monospace;font-size:1rem;color:var(--ink);background:#FBFDFD;
+  }
+  select{font-family:'Libre Franklin',sans-serif;cursor:pointer}
+  input.has-suffix{padding-right:48px}
+  input[type=number]:focus,select:focus{outline:none;border-color:var(--green);background:#fff}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield;appearance:textfield}
+
+  .verdict{
+    border-radius:var(--radius);padding:22px;border:1.5px dashed var(--line);
+    text-align:center;transition:background .25s,border-color .25s;
+  }
+  .verdict .label{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+  .verdict .big{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:2.4rem;line-height:1.1;margin:6px 0 2px}
+  .verdict .unit{font-size:.95rem;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace}
+  .stamp{
+    display:inline-block;margin-top:12px;padding:8px 18px;border-radius:8px;
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1rem;letter-spacing:.06em;
+    border:2px solid transparent;
+  }
+  .verdict.good{background:var(--green-soft);border-color:var(--green)}
+  .verdict.good .stamp{color:var(--green);border-color:var(--green)}
+  .verdict.mid{background:var(--gold-soft);border-color:var(--gold)}
+  .verdict.mid .stamp{color:var(--gold);border-color:var(--gold)}
+  .verdict.bad{background:var(--red-soft);border-color:var(--red)}
+  .verdict.bad .stamp{color:var(--red);border-color:var(--red)}
+
+  .breakdown{margin-top:16px;font-size:.9rem}
+  .breakdown .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .breakdown .row:last-child{border-bottom:none}
+  .breakdown .num{font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap}
+
+  .stackbar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin-top:16px;border:1px solid var(--line)}
+  .stackbar .seg{transition:width .3s}
+  .stack-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.78rem;color:var(--ink-soft)}
+  .stack-legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+
+  .note{
+    margin-top:14px;font-size:.82rem;color:var(--ink-soft);background:var(--paper);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  }
+  .note.warn{background:var(--gold-soft);border-color:var(--gold);color:#6B520E}
+
+  .promo{
+    margin-top:20px;border-radius:var(--radius);border:1px solid var(--line);
+    background:linear-gradient(135deg,#fff, #F0F6F6);padding:16px 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  }
+  .promo .txt{font-size:.9rem;max-width:520px}
+  .promo .txt strong{font-weight:600}
+  .promo a.btn{
+    display:inline-block;background:var(--green);color:#fff;text-decoration:none;
+    padding:10px 18px;border-radius:10px;font-weight:600;font-size:.9rem;white-space:nowrap;
+  }
+  .promo a.btn:hover{background:#0B5858}
+  .promo a.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  footer{margin-top:36px;font-size:.78rem;color:var(--ink-soft);text-align:center;line-height:1.6}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">Clear<span class="tick">Cut</span><span class="sub">Calories</span></div>
+      <p class="tagline">Clear-cut answers for your health goals — calories, timelines, macros, and more.</p>
+    </div>
+    <div class="units" role="group" aria-label="Unit system">
+      <button id="uImp" aria-pressed="true">lb / ft</button>
+      <button id="uMet" aria-pressed="false">kg / cm</button>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Calculators">
+    <button class="tab" id="tab-tdee" role="tab" aria-selected="true" aria-controls="panel-tdee">Calorie Needs</button>
+    <button class="tab" id="tab-goal" role="tab" aria-selected="false" aria-controls="panel-goal">Goal Timeline</button>
+    <button class="tab" id="tab-macro" role="tab" aria-selected="false" aria-controls="panel-macro">Macros</button>
+    <button class="tab" id="tab-bmi" role="tab" aria-selected="false" aria-controls="panel-bmi">BMI &amp; Range</button>
+    <button class="tab" id="tab-pw" role="tab" aria-selected="false" aria-controls="panel-pw">Protein &amp; Water</button>
+  </div>
+
+  <!-- ================= TDEE ================= -->
+  <section class="panel active" id="panel-tdee" role="tabpanel" aria-labelledby="tab-tdee">
+    <div class="grid">
+      <div class="card">
+        <h2>About you</h2>
+        <div class="two-col">
+          <div class="field">
+            <label for="tSex">Sex</label>
+            <select id="tSex"><option value="f">Female</option><option value="m">Male</option></select>
+          </div>
+          <div class="field">
+            <label for="tAge">Age</label>
+            <input type="number" id="tAge" value="35" min="18" max="99" step="1" inputmode="numeric">
+          </div>
+        </div>
+        <div class="field" data-imp>
+          <label>Height</label>
+          <div class="two-col">
+            <div class="input-row"><input class="has-suffix" type="number" id="tHft" value="5" min="3" max="7" step="1" inputmode="numeric"><span class="suffix">ft</span></div>
+            <div class="input-row"><input class="has-suffix" type="number" id="tHin" value="5" min="0" max="11" step="1" inputmode="numeric"><span class="suffix">in</span></div>
+          </div>
+        </div>
+        <div class="field" data-met hidden>
+          <label for="tHcm">Height</label>
+          <div class="input-row"><input class="has-suffix" type="number" id="tHcm" value="165" min="120" max="230" step="1" inputmode="numeric"><span class="suffix">cm</span></div>
+        </div>
+        <div class="field">
+          <label for="tWt">Weight</label>
+          <div class="input-row"><input class="has-suffix" type="number" id="tWt" value="160" min="60" max="700" step="1" inputmode="decimal"><span class="suffix" id="tWtUnit">lb</span></div>
+        </div>
+        <div class="field">
+          <label for="tAct">Activity level</label>
+          <select id="tAct">
+            <option value="1.2">Sedentary — desk job, little exercise</option>
+            <option value="1.375" selected>Light — exercise 1–3 days/wk</option>
+            <option value="1.55">Moderate — exercise 3–5 days/wk</option>
+            <option value="1.725">Active — hard exercise 6–7 days/wk</option>
+            <option value="1.9">Very active — physical job + training</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Your numbers</h2>
+        <div class="verdict good" id="tVerdict" aria-live="polite">
+          <div class="label">Calories to maintain your weight</div>
+          <div class="big" id="tTdee">1,995</div>
+          <div class="unit">calories per day</div>
+          <div class="stamp" id="tStamp">MAINTENANCE</div>
+        </div>
+        <div class="breakdown">
+          <div class="row"><span>Base metabolic rate (BMR)</span><span class="num" id="tBmr">1,451 cal</span></div>
+          <div class="row"><span>Gentle loss (~0.5 <span class="wtu">lb</span>/wk)</span><span class="num" id="tMild">1,745 cal</span></div>
+          <div class="row"><span>Steady loss (~1 <span class="wtu">lb</span>/wk)</span><span class="num" id="tMod">1,495 cal</span></div>
+          <div class="row"><span>Gentle gain (~0.5 <span class="wtu">lb</span>/wk)</span><span class="num" id="tGain">2,245 cal</span></div>
+        </div>
+        <div class="note" id="tNote">Estimates use the Mifflin-St Jeor equation — the most validated formula for most adults. Real-world needs vary ±10%; treat this as a starting point and adjust based on 2–3 weeks of results.</div>
+      </div>
+    </div>
+
+    <div class="promo">
+      <div class="txt"><strong>Tracking beats guessing:</strong> people who log meals lose about twice as much as those who don't. A food-tracking app makes these targets actionable.</div>
+      <a class="btn" href="#your-affiliate-link" rel="sponsored noopener">Try a tracking app</a>
+    </div>
+  </section>
+
+  <!-- ================= GOAL TIMELINE ================= -->
+  <section class="panel" id="panel-goal" role="tabpanel" aria-labelledby="tab-goal">
+    <div class="grid">
+      <div class="card">
+        <h2>Your goal</h2>
+        <div class="two-col">
+          <div class="field">
+            <label for="gNow">Current weight</label>
+            <div class="input-row"><input class="has-suffix" type="number" id="gNow" value="160" min="60" max="700" step="1" inputmode="decimal"><span class="suffix wtu">lb</span></div>
+          </div>
+          <div class="field">
+            <label for="gGoal">Goal weight</label>
+            <div class="input-row"><input class="has-suffix" type="number" id="gGoal" value="145" min="60" max="700" step="1" inputmode="decimal"><span class="suffix wtu">lb</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="gRate">Weekly pace</label>
+          <select id="gRate">
+            <option value="0.5">Gentle — 0.5 <span></span>/wk</option>
+            <option value="1" selected>Steady — 1 /wk</option>
+            <option value="1.5">Brisk — 1.5 /wk</option>
+            <option value="2">Maximum sustainable — 2 /wk</option>
+          </select>
+          <div class="hint" style="margin-top:5px">Paces above ~1% of body weight per week are hard to sustain and tend to cost muscle, not just fat.</div>
+        </div>
+        <div class="field">
+          <label for="gMaint">Your maintenance calories <span class="hint">(from the Calorie Needs tab)</span></label>
+          <div class="input-row"><input class="has-suffix" type="number" id="gMaint" value="2000" min="1000" max="6000" step="50" inputmode="numeric"><span class="suffix">cal</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Your timeline</h2>
+        <div class="verdict good" id="gVerdict" aria-live="polite">
+          <div class="label" id="gLabel">You'd reach your goal around</div>
+          <div class="big" id="gDate">Oct 22</div>
+          <div class="unit" id="gSub">15 weeks from today</div>
+          <div class="stamp" id="gStamp">15 WEEKS</div>
+        </div>
+        <div class="breakdown">
+          <div class="row"><span>Total change</span><span class="num" id="gTotal">15 lb</span></div>
+          <div class="row"><span>Daily calorie target</span><span class="num" id="gCal">1,500 cal</span></div>
+          <div class="row"><span>Daily deficit</span><span class="num" id="gDef">500 cal</span></div>
+          <div class="row"><span>Pace as % of body weight</span><span class="num" id="gPct">0.6%/wk</span></div>
+        </div>
+        <div class="note" id="gNote" hidden></div>
+      </div>
+    </div>
+
+    <div class="promo">
+      <div class="txt"><strong>Consistency is the whole game:</strong> pre-portioned meal delivery removes the nightly "what do I cook" decision that derails most plans.</div>
+      <a class="btn" href="#your-affiliate-link" rel="sponsored noopener">Compare meal plans</a>
+    </div>
+  </section>
+
+  <!-- ================= MACROS ================= -->
+  <section class="panel" id="panel-macro" role="tabpanel" aria-labelledby="tab-macro">
+    <div class="grid">
+      <div class="card">
+        <h2>Your intake</h2>
+        <div class="field">
+          <label for="mCal">Daily calories</label>
+          <div class="input-row"><input class="has-suffix" type="number" id="mCal" value="1800" min="1000" max="6000" step="50" inputmode="numeric"><span class="suffix">cal</span></div>
+        </div>
+        <div class="field">
+          <label for="mStyle">Eating style</label>
+          <select id="mStyle">
+            <option value="30,40,30" selected>Balanced — 30P / 40C / 30F</option>
+            <option value="40,30,30">High protein — 40P / 30C / 30F</option>
+            <option value="35,25,40">Lower carb — 35P / 25C / 40F</option>
+            <option value="25,50,25">Higher carb / endurance — 25P / 50C / 25F</option>
+            <option value="30,10,60">Keto-style — 30P / 10C / 60F</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Your macros</h2>
+        <div class="verdict good" id="mVerdict" aria-live="polite">
+          <div class="label">Daily protein target</div>
+          <div class="big" id="mProt">135g</div>
+          <div class="unit" id="mSub">at 1,800 calories</div>
+          <div class="stamp" id="mStamp">30 / 40 / 30</div>
+        </div>
+
+        <div class="stackbar" aria-hidden="true">
+          <div class="seg" id="segP" style="width:30%;background:var(--green)"></div>
+          <div class="seg" id="segC" style="width:40%;background:var(--gold)"></div>
+          <div class="seg" id="segF" style="width:30%;background:#5E8FA0"></div>
+        </div>
+        <div class="stack-legend">
+          <span><span class="dot" style="background:var(--green)"></span>Protein</span>
+          <span><span class="dot" style="background:var(--gold)"></span>Carbs</span>
+          <span><span class="dot" style="background:#5E8FA0"></span>Fat</span>
+        </div>
+
+        <div class="breakdown">
+          <div class="row"><span>Protein (4 cal/g)</span><span class="num" id="mPRow">135 g · 540 cal</span></div>
+          <div class="row"><span>Carbs (4 cal/g)</span><span class="num" id="mCRow">180 g · 720 cal</span></div>
+          <div class="row"><span>Fat (9 cal/g)</span><span class="num" id="mFRow">60 g · 540 cal</span></div>
+          <div class="row"><span>Per meal (3 meals)</span><span class="num" id="mMeal">45P / 60C / 20F</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="promo">
+      <div class="txt"><strong>Hitting protein is the hard part:</strong> most people undershoot it by 30–50g a day. A quality protein powder closes the gap in one scoop.</div>
+      <a class="btn" href="#your-affiliate-link" rel="sponsored noopener">Shop protein picks</a>
+    </div>
+  </section>
+
+  <!-- ================= BMI ================= -->
+  <section class="panel" id="panel-bmi" role="tabpanel" aria-labelledby="tab-bmi">
+    <div class="grid">
+      <div class="card">
+        <h2>Your measurements</h2>
+        <div class="field" data-imp>
+          <label>Height</label>
+          <div class="two-col">
+            <div class="input-row"><input class="has-suffix" type="number" id="bHft" value="5" min="3" max="7" step="1" inputmode="numeric"><span class="suffix">ft</span></div>
+            <div class="input-row"><input class="has-suffix" type="number" id="bHin" value="5" min="0" max="11" step="1" inputmode="numeric"><span class="suffix">in</span></div>
+          </div>
+        </div>
+        <div class="field" data-met hidden>
+          <label for="bHcm">Height</label>
+          <div class="input-row"><input class="has-suffix" type="number" id="bHcm" value="165" min="120" max="230" step="1" inputmode="numeric"><span class="suffix">cm</span></div>
+        </div>
+        <div class="field">
+          <label for="bWt">Weight</label>
+          <div class="input-row"><input class="has-suffix" type="number" id="bWt" value="160" min="60" max="700" step="1" inputmode="decimal"><span class="suffix wtu">lb</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Your result</h2>
+        <div class="verdict good" id="bVerdict" aria-live="polite">
+          <div class="label">Body mass index</div>
+          <div class="big" id="bBmi">26.6</div>
+          <div class="unit" id="bCat">above the standard range</div>
+          <div class="stamp" id="bStamp">BMI 26.6</div>
+        </div>
+        <div class="breakdown">
+          <div class="row"><span>Standard range for your height</span><span class="num" id="bRange">111–150 lb</span></div>
+          <div class="row"><span>BMI 18.5 (lower bound)</span><span class="num" id="bLow">111 lb</span></div>
+          <div class="row"><span>BMI 24.9 (upper bound)</span><span class="num" id="bHigh">150 lb</span></div>
+        </div>
+        <div class="note">BMI is a rough population-level screen, not a body composition measure — it can't tell muscle from fat and misreads athletic and muscular builds. Waist measurement, energy, strength, and bloodwork tell you far more than this single number.</div>
+      </div>
+    </div>
+
+    <div class="promo">
+      <div class="txt"><strong>Better than BMI:</strong> a smart scale tracks trends in weight, and trends matter more than any single reading.</div>
+      <a class="btn" href="#your-affiliate-link" rel="sponsored noopener">See smart scales</a>
+    </div>
+  </section>
+
+  <!-- ================= PROTEIN & WATER ================= -->
+  <section class="panel" id="panel-pw" role="tabpanel" aria-labelledby="tab-pw">
+    <div class="grid">
+      <div class="card">
+        <h2>About you</h2>
+        <div class="field">
+          <label for="pWt">Weight</label>
+          <div class="input-row"><input class="has-suffix" type="number" id="pWt" value="160" min="60" max="700" step="1" inputmode="decimal"><span class="suffix wtu">lb</span></div>
+        </div>
+        <div class="field">
+          <label for="pGoal">Primary goal</label>
+          <select id="pGoal">
+            <option value="loss" selected>Losing weight (keep muscle)</option>
+            <option value="maintain">Maintaining</option>
+            <option value="build">Building muscle</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pTrain">Training days per week</label>
+          <input type="number" id="pTrain" value="3" min="0" max="7" step="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Daily targets</h2>
+        <div class="verdict good" id="pVerdict" aria-live="polite">
+          <div class="label">Protein target</div>
+          <div class="big" id="pProt">115–160g</div>
+          <div class="unit" id="pSub">per day, spread across meals</div>
+          <div class="stamp" id="pStamp">PROTEIN FIRST</div>
+        </div>
+        <div class="breakdown">
+          <div class="row"><span>Water baseline</span><span class="num" id="pWater">80 oz (~2.4 L)</span></div>
+          <div class="row"><span>On training days add</span><span class="num" id="pWaterT">+16–24 oz</span></div>
+          <div class="row"><span>Protein per meal (4 meals)</span><span class="num" id="pPerMeal">29–40 g</span></div>
+          <div class="row"><span>Reference range used</span><span class="num" id="pRef">0.7–1.0 g/lb</span></div>
+        </div>
+        <div class="note">Protein ranges reflect common sports-nutrition guidance (roughly 1.6–2.2 g per kg of body weight). Water needs vary with climate and sweat rate — urine color is a better gauge than any formula.</div>
+      </div>
+    </div>
+
+    <div class="promo">
+      <div class="txt"><strong>Habit beats willpower:</strong> a marked water bottle and a protein target on the fridge outperform motivation every time.</div>
+      <a class="btn" href="#your-affiliate-link" rel="sponsored noopener">Gear that helps</a>
+    </div>
+  </section>
+
+  <footer>
+    For education only — not medical or nutrition advice. These are population-level estimates.<br>
+    Consult a doctor or registered dietitian before starting any weight loss program, especially with any medical conditions or history of disordered eating.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const num = id => { const v = parseFloat($(id).value); return isFinite(v) ? v : 0; };
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+
+  /* ---------- Unit system ---------- */
+  let metric = false;
+  const LB_PER_KG = 2.20462;
+
+  function setUnits(toMetric){
+    if (toMetric === metric) return;
+    // convert weights in place
+    ['tWt','gNow','gGoal','bWt','pWt'].forEach(id => {
+      const v = num(id);
+      $(id).value = toMetric ? (v/LB_PER_KG).toFixed(1) : (v*LB_PER_KG).toFixed(0);
+    });
+    // convert heights
+    if (toMetric){
+      const cm1 = num('tHft')*30.48 + num('tHin')*2.54;
+      const cm2 = num('bHft')*30.48 + num('bHin')*2.54;
+      $('tHcm').value = Math.round(cm1); $('bHcm').value = Math.round(cm2);
+    } else {
+      const conv = cm => { const totIn = cm/2.54; return [Math.floor(totIn/12), Math.round(totIn%12)]; };
+      let [f1,i1] = conv(num('tHcm')); $('tHft').value=f1; $('tHin').value=i1;
+      let [f2,i2] = conv(num('bHcm')); $('bHft').value=f2; $('bHin').value=i2;
+    }
+    metric = toMetric;
+    document.querySelectorAll('[data-imp]').forEach(el => el.hidden = metric);
+    document.querySelectorAll('[data-met]').forEach(el => el.hidden = !metric);
+    document.querySelectorAll('.wtu').forEach(el => el.textContent = metric ? 'kg' : 'lb');
+    $('uImp').setAttribute('aria-pressed', String(!metric));
+    $('uMet').setAttribute('aria-pressed', String(metric));
+    // relabel pace options
+    const u = metric ? 'kg' : 'lb';
+    const opts = $('gRate').options;
+    const paces = metric ? [0.25,0.5,0.7,0.9] : [0.5,1,1.5,2];
+    const names = ['Gentle','Steady','Brisk','Maximum sustainable'];
+    for (let i=0;i<4;i++){ opts[i].value = paces[i]; opts[i].textContent = names[i]+' — '+paces[i]+' '+u+'/wk'; }
+    calcAll();
+  }
+  $('uImp').addEventListener('click', () => setUnits(false));
+  $('uMet').addEventListener('click', () => setUnits(true));
+
+  const wtKg = id => metric ? num(id) : num(id)/LB_PER_KG;
+  const wtLocal = kg => metric ? kg : kg*LB_PER_KG;
+  const wUnit = () => metric ? 'kg' : 'lb';
+
+  /* ---------- Tabs ---------- */
+  const tabs = ['tab-tdee','tab-goal','tab-macro','tab-bmi','tab-pw'].map($);
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => {
+      const sel = x===t;
+      x.setAttribute('aria-selected', sel?'true':'false');
+      $(x.getAttribute('aria-controls')).classList.toggle('active', sel);
+    });
+  }));
+
+  /* ---------- Calorie floors ---------- */
+  function calFloor(){ return $('tSex').value === 'm' ? 1500 : 1200; }
+
+  /* ---------- TDEE ---------- */
+  function heightCm(pfx){
+    return metric ? num(pfx+'Hcm') : num(pfx+'Hft')*30.48 + num(pfx+'Hin')*2.54;
+  }
+  function calcTdee(){
+    const kg = wtKg('tWt'), cm = heightCm('t'), age = num('tAge');
+    const sexM = $('tSex').value === 'm';
+    const bmr = 10*kg + 6.25*cm - 5*age + (sexM ? 5 : -161);
+    const tdee = bmr * parseFloat($('tAct').value);
+    const floor = calFloor();
+
+    // deficits: 0.5 lb/wk = 250/day, 1 lb = 500 (or metric equivalents ~0.25/0.5kg)
+    const mild = Math.max(tdee - 250, floor);
+    const mod  = Math.max(tdee - 500, floor);
+
+    $('tBmr').textContent = fmt(bmr) + ' cal';
+    $('tTdee').textContent = fmt(tdee);
+    $('tMild').textContent = fmt(mild) + ' cal';
+    $('tMod').textContent = fmt(mod) + ' cal';
+    $('tGain').textContent = fmt(tdee + 250) + ' cal';
+
+    const floored = (tdee - 500) < floor;
+    $('tNote').classList.toggle('warn', floored);
+    $('tNote').textContent = floored
+      ? 'Your steady-loss number was raised to '+fmt(floor)+' cal — going below that isn\u2019t safe or sustainable without medical supervision. A gentler pace plus more daily movement is the better lever at your size and activity level.'
+      : 'Estimates use the Mifflin-St Jeor equation — the most validated formula for most adults. Real-world needs vary \u00B110%; treat this as a starting point and adjust based on 2\u20133 weeks of results.';
+    return tdee;
+  }
+
+  /* ---------- Goal timeline ---------- */
+  function calcGoal(){
+    const now = num('gNow'), goal = num('gGoal');
+    const rate = parseFloat($('gRate').value); // in local units/wk
+    const maint = num('gMaint');
+    const floor = calFloor();
+    const losing = goal < now;
+    const diff = Math.abs(now - goal);
+    const v = $('gVerdict'), s = $('gStamp'), note = $('gNote');
+    note.hidden = true;
+
+    if (diff < 0.5){
+      $('gLabel').textContent = 'You\u2019re already there';
+      $('gDate').textContent = '\u2713';
+      $('gSub').textContent = 'goal matches current weight';
+      s.textContent = 'MAINTAIN';
+      v.className = 'verdict good';
+      $('gTotal').textContent = '0 ' + wUnit();
+      $('gCal').textContent = fmt(maint) + ' cal';
+      $('gDef').textContent = '0 cal';
+      $('gPct').textContent = '0%/wk';
+      return;
+    }
+
+    // calories per unit of weight: 3500/lb or 7700/kg
+    const calPerUnit = metric ? 7700 : 3500;
+    const dailyDelta = rate * calPerUnit / 7;
+    let target = losing ? maint - dailyDelta : maint + dailyDelta;
+    let effRate = rate, flooredFlag = false;
+
+    if (losing && target < floor){
+      target = floor;
+      effRate = Math.max((maint - floor) * 7 / calPerUnit, 0);
+      flooredFlag = true;
+    }
+
+    const pctBw = now > 0 ? effRate / now * 100 : 0;
+
+    if (losing && effRate <= 0.01){
+      $('gLabel').textContent = 'This pace isn\u2019t available safely';
+      $('gDate').textContent = '\u2014';
+      $('gSub').textContent = 'your maintenance is already near the safe calorie floor';
+      s.textContent = 'SEE A PRO';
+      v.className = 'verdict bad';
+      note.hidden = false;
+      note.className = 'note warn';
+      note.textContent = 'At your inputs there\u2019s no meaningful deficit above the '+fmt(floor)+'-calorie safety floor. Increasing daily activity, or working with a doctor or registered dietitian, is the right next step \u2014 not eating less.';
+      $('gTotal').textContent = diff.toFixed(1)+' '+wUnit();
+      $('gCal').textContent = fmt(floor)+' cal';
+      $('gDef').textContent = '\u2014';
+      $('gPct').textContent = '\u2014';
+      return;
+    }
+
+    const weeks = diff / effRate;
+    const dt = new Date(); dt.setDate(dt.getDate() + Math.round(weeks*7));
+    const dateStr = dt.toLocaleDateString('en-US',{month:'short', day:'numeric'}) + (dt.getFullYear() !== new Date().getFullYear() ? ', '+dt.getFullYear() : '');
+
+    $('gLabel').textContent = losing ? 'You\u2019d reach your goal around' : 'You\u2019d hit your target around';
+    $('gDate').textContent = dateStr;
+    $('gSub').textContent = Math.round(weeks) + ' weeks from today';
+    s.textContent = Math.round(weeks) + ' WEEKS';
+    $('gTotal').textContent = diff.toFixed(1) + ' ' + wUnit();
+    $('gCal').textContent = fmt(target) + ' cal';
+    $('gDef').textContent = fmt(Math.abs(maint - target)) + ' cal';
+    $('gPct').textContent = pctBw.toFixed(1) + '%/wk';
+
+    if (flooredFlag){
+      v.className = 'verdict mid';
+      note.hidden = false; note.className = 'note warn';
+      note.textContent = 'Your chosen pace would require eating below '+fmt(floor)+' calories, so the plan was adjusted to a slower, safer pace ('+effRate.toFixed(1)+' '+wUnit()+'/wk). The timeline above reflects that.';
+    } else if (losing && pctBw > 1){
+      v.className = 'verdict mid';
+      note.hidden = false; note.className = 'note warn';
+      note.textContent = 'This pace is above ~1% of body weight per week \u2014 doable short-term, but expect more hunger and some muscle loss. Pair it with resistance training and a high protein intake, or pick a gentler pace.';
+    } else {
+      v.className = 'verdict good';
+    }
+  }
+
+  /* ---------- Macros ---------- */
+  function calcMacro(){
+    const cal = num('mCal');
+    const [p,c,f] = $('mStyle').value.split(',').map(Number);
+    const pg = cal*p/100/4, cg = cal*c/100/4, fg = cal*f/100/9;
+    $('mProt').textContent = Math.round(pg)+'g';
+    $('mSub').textContent = 'at '+fmt(cal)+' calories';
+    $('mStamp').textContent = p+' / '+c+' / '+f;
+    $('mPRow').textContent = Math.round(pg)+' g \u00B7 '+fmt(cal*p/100)+' cal';
+    $('mCRow').textContent = Math.round(cg)+' g \u00B7 '+fmt(cal*c/100)+' cal';
+    $('mFRow').textContent = Math.round(fg)+' g \u00B7 '+fmt(cal*f/100)+' cal';
+    $('mMeal').textContent = Math.round(pg/3)+'P / '+Math.round(cg/3)+'C / '+Math.round(fg/3)+'F';
+    $('segP').style.width = p+'%';
+    $('segC').style.width = c+'%';
+    $('segF').style.width = f+'%';
+  }
+
+  /* ---------- BMI ---------- */
+  function calcBmi(){
+    const kg = wtKg('bWt');
+    const m = heightCm('b')/100;
+    if (m <= 0) return;
+    const bmi = kg/(m*m);
+    const lowKg = 18.5*m*m, highKg = 24.9*m*m;
+    const u = wUnit();
+    let cat, cls;
+    if (bmi < 18.5){ cat = 'below the standard range'; cls='mid'; }
+    else if (bmi < 25){ cat = 'within the standard range'; cls='good'; }
+    else if (bmi < 30){ cat = 'above the standard range'; cls='mid'; }
+    else { cat = 'well above the standard range'; cls='mid'; }
+    $('bBmi').textContent = bmi.toFixed(1);
+    $('bCat').textContent = cat;
+    $('bStamp').textContent = 'BMI '+bmi.toFixed(1);
+    $('bVerdict').className = 'verdict '+cls;
+    $('bLow').textContent = Math.round(wtLocal(lowKg))+' '+u;
+    $('bHigh').textContent = Math.round(wtLocal(highKg))+' '+u;
+    $('bRange').textContent = Math.round(wtLocal(lowKg))+'\u2013'+Math.round(wtLocal(highKg))+' '+u;
+  }
+
+  /* ---------- Protein & Water ---------- */
+  function calcPw(){
+    const kg = wtKg('pWt');
+    const goal = $('pGoal').value;
+    // g/kg ranges
+    const ranges = { loss:[1.6,2.2], maintain:[1.2,1.6], build:[1.6,2.2] };
+    const [lo,hi] = ranges[goal];
+    const pLo = Math.round(kg*lo), pHi = Math.round(kg*hi);
+    $('pProt').textContent = pLo+'\u2013'+pHi+'g';
+    $('pPerMeal').textContent = Math.round(pLo/4)+'\u2013'+Math.round(pHi/4)+' g';
+    $('pRef').textContent = metric ? lo.toFixed(1)+'\u2013'+hi.toFixed(1)+' g/kg' : (lo/LB_PER_KG).toFixed(1)+'\u2013'+(hi/LB_PER_KG).toFixed(1)+' g/lb';
+    $('pStamp').textContent = goal==='build' ? 'BUILD MODE' : goal==='loss' ? 'PROTEIN FIRST' : 'MAINTAIN';
+
+    // water: ~35 ml/kg baseline
+    const ml = kg*35;
+    const oz = ml/29.5735;
+    $('pWater').textContent = metric ? (ml/1000).toFixed(1)+' L' : Math.round(oz)+' oz (~'+(ml/1000).toFixed(1)+' L)';
+    const train = num('pTrain');
+    $('pWaterT').textContent = train>0 ? (metric ? '+0.5\u20130.7 L' : '+16\u201324 oz') : '\u2014';
+  }
+
+  function calcAll(){ calcTdee(); calcGoal(); calcMacro(); calcBmi(); calcPw(); }
+
+  const wire = (ids, fn) => ids.forEach(id => $(id).addEventListener('input', fn));
+  wire(['tSex','tAge','tHft','tHin','tHcm','tWt','tAct'], () => { calcTdee(); calcGoal(); });
+  wire(['gNow','gGoal','gRate','gMaint'], calcGoal);
+  wire(['mCal','mStyle'], calcMacro);
+  wire(['bHft','bHin','bHcm','bWt'], calcBmi);
+  wire(['pWt','pGoal','pTrain'], calcPw);
+
+  calcAll();
+})();
+</script>
+</body>
+</html>
